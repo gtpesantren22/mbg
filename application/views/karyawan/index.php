@@ -238,6 +238,27 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <script>
+        window.onload = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        console.log("✅ Izin lokasi diberikan");
+                    },
+                    function() {
+                        // alert("Akses lokasi wajib diizinkan untuk menggunakan fitur ini!");
+                        location.reload(); // reload biar popup muncul lagi kalau user ubah izin
+                    },
+                    function(error) {
+                        console.warn("❌ Gagal mendapatkan lokasi:", error.message);
+                    }, {
+                        enableHighAccuracy: true
+                    }
+                );
+            } else {
+                alert("Browser Anda tidak mendukung fitur lokasi (GPS).");
+            }
+        };
+
         // Fungsi untuk menampilkan notifikasi
         function showNotification(message, type) {
             // Buat elemen notifikasi
