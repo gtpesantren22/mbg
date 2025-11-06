@@ -244,10 +244,6 @@
                     function(position) {
                         console.log("✅ Izin lokasi diberikan");
                     },
-                    function() {
-                        // alert("Akses lokasi wajib diizinkan untuk menggunakan fitur ini!");
-                        location.reload(); // reload biar popup muncul lagi kalau user ubah izin
-                    },
                     function(error) {
                         console.warn("❌ Gagal mendapatkan lokasi:", error.message);
                     }, {
