@@ -71,6 +71,7 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Divisi</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Kerja</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -91,6 +92,11 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                                                 <i class="fas ${statusIcon} mr-1"></i><?= $data->description ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                <i class="fas ${statusIcon} mr-1"></i><?= $data->dari ? date('H:i', strtotime($data->dari)) : '' ?> - <?= $data->sampai ? date('H:i', strtotime($data->sampai)) : '' ?>
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -158,6 +164,18 @@
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi *</label>
                         <input type="text" name="description"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                            placeholder="Deskripsi divisi" required>
+                    </div>
+                    <div>
+                        <label for="dari" class="block text-sm font-medium text-gray-700 mb-1">Jam Kerja dari *</label>
+                        <input type="time" name="dari"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                            placeholder="Input waktu" required>
+                    </div>
+                    <div>
+                        <label for="sampai" class="block text-sm font-medium text-gray-700 mb-1">Sampai *</label>
+                        <input type="time" name="sampai"
                             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
                             placeholder="Deskripsi divisi" required>
                     </div>
@@ -232,6 +250,18 @@
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi *</label>
                         <input type="text" name="description" id="description"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                            placeholder="Deskripsi divisi" required>
+                    </div>
+                    <div>
+                        <label for="dari" class="block text-sm font-medium text-gray-700 mb-1">Jam Kerja dari *</label>
+                        <input type="time" name="dari" id="dari"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                            placeholder="Masukkan nama divisi" required>
+                    </div>
+                    <div>
+                        <label for="sampai" class="block text-sm font-medium text-gray-700 mb-1">sampai *</label>
+                        <input type="time" name="sampai" id="sampai"
                             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
                             placeholder="Deskripsi divisi" required>
                     </div>

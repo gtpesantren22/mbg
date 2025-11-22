@@ -71,7 +71,7 @@ class Auth extends CI_Controller
             // set minimal user data ke session (tidak menyimpan password)
             $sess = [
                 'id' => $user['id'],
-                'uuid' => $user['uuid'],
+                'emid' => $user['employee_id'],
                 'username' => $user['username'],
                 'name' => $user['name'],
                 'role' => $user['role'],

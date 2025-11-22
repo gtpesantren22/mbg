@@ -21,6 +21,7 @@ class Karyawan extends MY_Controller
         $isday = date('Y-m-d');
         $data['data'] = $this->model->getBy2('absensi', 'employee_id', $userId, 'tanggal', $isday)->row();
         $data['hasil'] = $this->db->query("SELECT * FROM absensi WHERE employee_id = $userId ORDER BY tanggal DESC ")->result();
+        $data['all'] = $this->db->query("SELECT COUNT(*) AS jumlah FROM absensi WHERE employee_id = $userId ")->row();
 
         $this->load->view('karyawan/index', $data);
     }
@@ -112,5 +113,27 @@ class Karyawan extends MY_Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earth_radius * $c;
+    }
+
+    public function riwayat()
+    {
+        $user = $this->session->userdata('user');
+        $data['title'] = 'Riwayat Kehadiran';
+        $data['user'] = $user;
+        $userId = $user['id'];
+        $data['hasil'] = $this->db->query("SELECT * FROM absensi WHERE employee_id = $userId ORDER BY tanggal DESC ")->result();
+
+        $this->load->view('karyawan/riwayat', $data);
+    }
+
+    public function profil()
+    {
+        $user = $this->session->userdata('user');
+        $data['title'] = 'Riwayat Kehadiran';
+        $data['user'] = $user;
+        $uID = $user['emid'];
+        $data['info'] = $this->db->query("SELECT a.*, b.division_name as jabatan FROM employees a LEFT JOIN divisions b ON a.division_id=b.id WHERE a.id = $uID ")->row();
+
+        $this->load->view('karyawan/profil', $data);
     }
 }

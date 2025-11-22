@@ -19,6 +19,9 @@ class Admin extends MY_Controller
         $data['title2'] = 'Dashboard';
         $data['menu'] = 'dashboard';
         $data['user'] = $user;
+        $data['karyawan'] = $this->model->getAll('employees')->num_rows();
+        $data['hadir'] = $this->model->getBy('absensi', 'tanggal', date('Y-m-d'))->num_rows();
+        $data['izin'] = $this->model->getBy('izin', 'tanggal', date('Y-m-d'))->num_rows();
         $this->load->view('admin/dashboard', $data);
     }
     public function karyawan()
@@ -155,11 +158,15 @@ class Admin extends MY_Controller
     {
         $nama = $this->input->post('nama', TRUE);
         $description = $this->input->post('description', TRUE);
+        $dari = $this->input->post('dari', TRUE);
+        $sampai = $this->input->post('sampai', TRUE);
 
         $simpanData = [
             'division_code' => shortInitials($nama),
             'division_name' => $nama,
             'description' => $description,
+            'dari' => $dari,
+            'sampai' => $sampai,
         ];
 
 
@@ -183,11 +190,15 @@ class Admin extends MY_Controller
         $id = $this->input->post('id', TRUE);
         $nama = $this->input->post('nama', TRUE);
         $description = $this->input->post('description', TRUE);
+        $dari = $this->input->post('dari', TRUE);
+        $sampai = $this->input->post('sampai', TRUE);
 
         $simpanData = [
             'division_code' => shortInitials($nama),
             'division_name' => $nama,
             'description' => $description,
+            'dari' => $dari,
+            'sampai' => $sampai,
         ];
 
 
@@ -217,7 +228,7 @@ class Admin extends MY_Controller
         $user = $this->session->userdata('user');
         $data['title'] = 'Dashboard Admin | Users Akun';
         $data['title2'] = 'List akun pengguna';
-        $data['menu'] = 'user';
+        $data['menu'] = 'users';
         $data['user'] = $user;
         $data['datas'] = $this->db->query("SELECT a.*, b.full_name, b.email FROM users a  LEFT JOIN employees b ON a.employee_id=b.id WHERE role != 'admin'")->result();
 

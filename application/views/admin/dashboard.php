@@ -34,7 +34,7 @@
         </div>
 
         <!-- Stats Cards - Mobile Optimized -->
-        <div class="grid grid-cols-2 gap-3 mb-6 md:grid-cols-2 lg:grid-cols-4 md:gap-5">
+        <div class="grid grid-cols-2 gap-3 mb-6 md:grid-cols-1 lg:grid-cols-3 md:gap-5">
             <!-- Total Karyawan -->
             <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
                 <div class="flex items-center">
@@ -43,7 +43,7 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-xs text-gray-500">Total Karyawan</p>
-                        <p class="text-lg font-bold text-gray-900">142</p>
+                        <p class="text-lg font-bold text-gray-900"><?= $karyawan ?></p>
                     </div>
                 </div>
                 <div class="mt-2 text-xs text-green-600 font-medium">
@@ -59,27 +59,11 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-xs text-gray-500">Hadir Hari Ini</p>
-                        <p class="text-lg font-bold text-gray-900">128</p>
+                        <p class="text-lg font-bold text-gray-900"><?= $hadir ?></p>
                     </div>
                 </div>
                 <div class="mt-2 text-xs text-red-600 font-medium">
-                    5 belum absen
-                </div>
-            </div>
-
-            <!-- Terlambat -->
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-clock text-amber-600"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-xs text-gray-500">Terlambat</p>
-                        <p class="text-lg font-bold text-gray-900">8</p>
-                    </div>
-                </div>
-                <div class="mt-2 text-xs text-amber-600 font-medium">
-                    6.3% dari total
+                    <?= $karyawan - ($hadir + $izin) ?> belum absen
                 </div>
             </div>
 
@@ -90,12 +74,12 @@
                         <i class="fas fa-file-alt text-purple-600"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-xs text-gray-500">Pengajuan Izin</p>
-                        <p class="text-lg font-bold text-gray-900">9</p>
+                        <p class="text-xs text-gray-500">Izin</p>
+                        <p class="text-lg font-bold text-gray-900"><?= $izin ?></p>
                     </div>
                 </div>
                 <div class="mt-2 text-xs text-blue-600 font-medium">
-                    3 menunggu
+                    Perizinan hari ini
                 </div>
             </div>
         </div>

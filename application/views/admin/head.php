@@ -136,15 +136,16 @@
                     </div>
                 </div>
 
-                <a href="#" class="<?= $menu == 'rekap' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
-                    <i class="fas fa-history mr-3"></i>
-                    Rekap Absensi
-                </a>
-                <!-- <a href="#" class="<?= $menu == 'dashboard' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
+                <a href="#" class="<?= $menu == 'izin' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
                     <i class="fas fa-file-alt mr-3"></i>
                     Pengajuan Izin
                 </a>
-                <a href="#" class="<?= $menu == 'dashboard' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
+                <a href="<?= base_url('rekap/absensi') ?>" class="<?= $menu == 'rekap' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
+                    <i class="fas fa-history mr-3"></i>
+                    Rekap Absensi
+                </a>
+
+                <!--<a href="#" class="<?= $menu == 'dashboard' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
                     <i class="fas fa-chart-bar mr-3"></i>
                     Laporan
                 </a> -->
@@ -202,28 +203,48 @@
 
                             <a href="<?= base_url('admin/karyawan') ?>"
                                 class="px-4 py-2 text-sm <?= $menu == 'karyawan' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
-                                <i class="fas fa-users mr-2"></i> Data Karyawan
+                                <i class="fas fa-arrow-right mr-2"></i> Data Karyawan
                             </a>
 
                             <a href="<?= base_url('admin/divisi') ?>"
                                 class="px-4 py-2 text-sm <?= $menu == 'divisi' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
-                                <i class="fas fa-sitemap mr-2"></i> Data Divisi
+                                <i class="fas fa-arrow-right mr-2"></i> Data Divisi
                             </a>
                             <a href="<?= base_url('admin/users') ?>"
                                 class="px-4 py-2 text-sm <?= $menu == 'users' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
-                                <i class="fas fa-user-lock mr-2"></i> Data User Akun
+                                <i class="fas fa-arrow-right mr-2"></i> Data User Akun
+                            </a>
+                        </div>
+                    </div>
+                    <div x-data="{ open: false }" class="relative">
+                        <!-- Tombol -->
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl
+                       <?= $menu == 'absensi' || $menu == 'izin' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?>">
+                            <span><i class="fas fa-calendar-check mr-3"></i> Absensi</span>
+                            <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+
+                        <!-- Isi dropdown -->
+                        <div x-show="open" x-transition @click.outside="open = false"
+                            class="mt-1 ml-4 flex flex-col bg-primary-800 rounded-lg shadow-lg overflow-hidden">
+
+                            <a href="<?= base_url('absensi') ?>"
+                                class="px-4 py-2 text-sm <?= $menu == 'absensi' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
+                                <i class="fas fa-arrow-right mr-2"></i> Input Absensi
+                            </a>
+
+                            <a href="<?= base_url('absensi/izin') ?>"
+                                class="px-4 py-2 text-sm <?= $menu == 'izin' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
+                                <i class="fas fa-arrow-right mr-2"></i> Perizianan
                             </a>
                         </div>
                     </div>
 
-                    <a href="#" class="<?= $menu == 'rekap' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
+                    <a href="<?= base_url('rekap/absensi') ?>" class="<?= $menu == 'rekap' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
                         <i class="fas fa-history mr-3"></i>
                         Rekap Absensi
                     </a>
-                    <!-- <a href="#" class="<?= $menu == 'dashboard' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
-                        <i class="fas fa-file-alt mr-3"></i>
-                        Pengajuan Izin
-                    </a> -->
                     <!-- <a href="#" class="<?= $menu == 'dashboard' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-700' ?> group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
                         <i class="fas fa-chart-bar mr-3"></i>
                         Laporan
