@@ -279,23 +279,24 @@
 
         function openModalWithCamera() {
             Html5Qrcode.getCameras().then(devices => {
+                console.log("Detected cameras:", devices); // DEBUG
+
                 if (devices && devices.length) {
-                    // Cari kamera belakang
+                    cameras = devices;
+
+                    // Pilih kamera belakang jika ada
                     const backCamera = devices.find(d =>
                         /back|rear|environment/i.test(d.label)
                     );
 
-                    if (backCamera) {
-                        startCamera(backCamera.id);
-                    } else {
-                        // jika tidak ada label, pakai kamera terakhir (umumnya kamera belakang)
-                        startCamera(devices[devices.length - 1].id);
-                    }
+                    const selected = backCamera || devices[0];
+
+                    currentCameraIndex = devices.indexOf(selected);
+
+                    startCamera(selected.id);
                 } else {
                     alert("Tidak ada kamera terdeteksi!");
                 }
-            }).catch(err => {
-                console.error("Tidak dapat mengakses kamera:", err);
             });
 
         }
