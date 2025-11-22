@@ -122,6 +122,7 @@
             <h3 class="text-lg font-semibold text-gray-800 mb-2" id="modalTitle">Scan QR untuk Absen</h3>
             <p class="text-gray-600 mb-4" id="modalMessage">Arahkan kamera ke QR code absensi.</p>
 
+            <p class="text-gray-600 mb-2" id="infoProses"></p>
             <!-- Area kamera -->
             <div id="qrReader" class="rounded-xl overflow-hidden border border-gray-200"></div>
 
@@ -244,6 +245,7 @@
                 qrCodeMessage => {
                     console.log("✅ QR Terdeteksi:", qrCodeMessage);
                     stopCamera();
+                    $('#infoProses').text('Absensi sedang diproses....')
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition(
                             function(pos) {
