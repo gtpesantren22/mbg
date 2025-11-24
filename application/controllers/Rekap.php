@@ -236,12 +236,15 @@ class Rekap extends MY_Controller
                 if ($status == 'Izin')  $totalIzin++;
 
                 // Warna cell
-                $color = match ($status) {
-                    'Hadir'  => 'C6EFCE',
-                    'Izin'   => 'FFF2CC',
-                    '-' => 'FFFFFF',
-                    default  => 'FFFFFF'
-                };
+                if ($status == 'Hadir') {
+                    $color = 'C6EFCE';
+                } elseif ($status == 'Izin') {
+                    $color = 'FFF2CC';
+                } elseif ($status == 'Kosong') {
+                    $color = 'F4CCCC';
+                } else {
+                    $color = 'FFFFFF';
+                }
 
                 $sheet->getStyle("{$colLetter}{$rowNum}")->applyFromArray([
                     'fill' => [
