@@ -92,18 +92,99 @@
                     <h3 class="text-base font-medium text-gray-900 md:text-lg">Statistik Kehadiran</h3>
                 </div>
                 <div class="p-4 md:p-6">
-                    <div class="h-60 md:h-80 flex items-center justify-center bg-gray-50 rounded-lg">
-                        <div class="text-center text-gray-500">
-                            <i class="fas fa-chart-bar text-3xl mb-3 md:text-4xl"></i>
-                            <p class="text-sm md:text-base">Grafik kehadiran akan ditampilkan di sini</p>
-                        </div>
+                    <!-- Pilih Bulan -->
+                    <div class="mb-4 flex items-center gap-2">
+                        <label for="monthPicker" class="font-medium">Pilih Bulan:</label>
+                        <input type="month" id="monthPicker" class="border px-2 py-1 rounded">
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-4">
+                        <div id="attendanceChart" class="w-full" style="height:400px;"></div>
                     </div>
                 </div>
             </div>
-
-
         </div>
+
     </main>
 </div>
 
 <?php $this->load->view('admin/foot'); ?>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthPicker = document.getElementById('monthPicker');
+
+        // Set default bulan ini
+        const today = new Date();
+        const month = today.getMonth() + 1;
+        monthPicker.value = `${today.getFullYear()}-${month.toString().padStart(2, '0')}`;
+
+        let chart;
+
+        function loadChart(monthValue) {
+            fetch(`<?= base_url('admin/getAttendanceStats') ?>?month=${monthValue}`)
+                .then(res => res.json())
+                .then(data => {
+                    const options = {
+                        chart: {
+                            type: 'bar',
+                            height: 400,
+                            toolbar: {
+                                show: true
+                            }
+                        },
+                        series: [{
+                                name: 'Hadir',
+                                data: data.hadir
+                            },
+                            {
+                                name: 'Izin',
+                                data: data.izin
+                            }
+                        ],
+                        xaxis: {
+                            categories: data.categories,
+                            title: {
+                                text: 'Tanggal'
+                            }
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Jumlah'
+                            }
+                        },
+                        colors: ['#34D399', '#F79646'],
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '50%',
+                                borderRadius: 5,
+                                borderRadiusApplication: 'end'
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        }
+                    };
+
+                    if (chart) {
+                        chart.updateOptions({
+                            series: options.series,
+                            xaxis: options.xaxis
+                        });
+                    } else {
+                        chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
+                        chart.render();
+                    }
+                });
+        }
+
+        // Load chart bulan ini
+        loadChart(monthPicker.value);
+
+        // Event change bulan
+        monthPicker.addEventListener('change', function() {
+            loadChart(this.value);
+        });
+    });
+</script>

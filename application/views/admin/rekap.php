@@ -165,9 +165,13 @@
                     <p class="text-gray-600 text-sm" id="tableInfo">Pilih periode untuk melihat data</p>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button id="prevPeriod" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl font-medium transition flex items-center justify-center">
-                        <i class="fas fa-file-excel mr-2"></i> Download to Excel
-                    </button>
+                    <form action="<?= base_url('rekap/export_excel') ?>" method="post">
+                        <input type="hidden" name="start" id="fstart">
+                        <input type="hidden" name="end" id="fend">
+                        <button id="" type="submit" data-start="" data-end="" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl font-medium transition flex items-center justify-center">
+                            <i class="fas fa-file-excel mr-2"></i> Download to Excel
+                        </button>
+                    </form>
                 </div>
             </div>
 
@@ -208,78 +212,56 @@
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    // Data contoh untuk rekap absensi
-    const employees = [{
-            id: 1,
-            name: "Ahmad Fauzi",
-            division: "IT",
-            employeeId: "MBG001"
-        },
-        {
-            id: 2,
-            name: "Siti Rahma",
-            division: "HRD",
-            employeeId: "MBG002"
-        },
-        {
-            id: 3,
-            name: "Budi Santoso",
-            division: "FIN",
-            employeeId: "MBG003"
-        },
-        {
-            id: 4,
-            name: "Maya Sari",
-            division: "MKT",
-            employeeId: "MBG004"
-        },
-        {
-            id: 5,
-            name: "Rizki Pratama",
-            division: "OPS",
-            employeeId: "MBG005"
-        },
-        {
-            id: 6,
-            name: "Dewi Anggraini",
-            division: "IT",
-            employeeId: "MBG006"
+    let employees = [];
+
+    // Ambil data karyawan dari server
+    $.ajax({
+        url: "<?= base_url('rekap/getEmployees') ?>",
+        type: "GET",
+        dataType: "json",
+        success: function(res) {
+            employees = res; // data karyawan masuk ke JS
         }
-    ];
+    });
 
-    // Fungsi untuk generate data absensi acak
+    // Ambil data absensi dari server
     function generateAttendanceData(startDate, endDate) {
-        const attendanceData = {};
-        const statuses = ['present', 'late', 'absent', 'leave', 'holiday'];
+        return new Promise((resolve) => {
+            $.ajax({
+                url: "<?= base_url('rekap/getAttendance') ?>",
+                type: "GET",
+                data: {
+                    start: startDate.toISOString().split('T')[0],
+                    end: endDate.toISOString().split('T')[0]
+                },
+                dataType: "json",
+                success: function(records) {
+                    const attendanceData = {};
 
-        employees.forEach(employee => {
-            attendanceData[employee.id] = [];
-            const currentDate = new Date(startDate);
+                    // Siapkan array kosong untuk setiap karyawan
+                    employees.forEach(emp => {
+                        attendanceData[emp.id] = [];
+                    });
 
-            while (currentDate <= endDate) {
-                // Weekend = holiday
-                if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-                    attendanceData[employee.id].push({
-                        date: new Date(currentDate),
-                        status: 'holiday'
+                    // Insert data hadir & izin
+                    records.forEach(item => {
+                        if (!attendanceData[item.employee_id]) {
+                            attendanceData[item.employee_id] = [];
+                        }
+
+                        attendanceData[item.employee_id].push({
+                            date: new Date(item.date),
+                            status: item.status // hadir / izin
+                        });
                     });
-                } else {
-                    // Random status untuk weekday
-                    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-                    attendanceData[employee.id].push({
-                        date: new Date(currentDate),
-                        status: randomStatus
-                    });
+
+                    resolve(attendanceData);
                 }
-
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
+            });
         });
-
-        return attendanceData;
     }
 
-    // Fungsi untuk format tanggal
+    // Format tanggal full
     function formatDate(date) {
         return date.toLocaleDateString('id-ID', {
             day: '2-digit',
@@ -288,7 +270,7 @@
         });
     }
 
-    // Fungsi untuk format tanggal pendek (untuk header tabel)
+    // Format tanggal pendek (untuk header)
     function formatShortDate(date) {
         return date.toLocaleDateString('id-ID', {
             day: '2-digit',
@@ -296,49 +278,50 @@
         });
     }
 
-    // Fungsi untuk menghitung hari kerja
+    // Hitung hari kerja (weekday)
     function getWorkingDays(startDate, endDate) {
         let count = 0;
         const current = new Date(startDate);
 
         while (current <= endDate) {
-            if (current.getDay() !== 0 && current.getDay() !== 6) {
-                count++;
-            }
+            if (current.getDay() !== 0 && current.getDay() !== 6) count++;
             current.setDate(current.getDate() + 1);
         }
 
         return count;
     }
 
-    // Fungsi untuk merender header tabel
+    // Render header tabel
     function renderTableHeader(startDate, endDate) {
         const headerRow = document.getElementById('tableHeader');
         headerRow.innerHTML = '';
 
-        // Kolom No
-        const noTh = document.createElement('th');
-        noTh.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
-        noTh.textContent = 'No';
-        headerRow.appendChild(noTh);
+        const columns = [{
+                text: 'No',
+                class: 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+            },
+            {
+                text: 'Nama Karyawan',
+                class: 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10'
+            },
+            {
+                text: 'Divisi',
+                class: 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+            }
+        ];
 
-        // Kolom Nama
-        const nameTh = document.createElement('th');
-        nameTh.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10';
-        nameTh.textContent = 'Nama Karyawan';
-        headerRow.appendChild(nameTh);
+        columns.forEach(col => {
+            const th = document.createElement('th');
+            th.className = col.class;
+            th.textContent = col.text;
+            headerRow.appendChild(th);
+        });
 
-        // Kolom Divisi
-        const divisionTh = document.createElement('th');
-        divisionTh.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
-        divisionTh.textContent = 'Divisi';
-        headerRow.appendChild(divisionTh);
-
-        // Kolom tanggal
+        // Tanggal
         const currentDate = new Date(startDate);
         while (currentDate <= endDate) {
-            const dateTh = document.createElement('th');
-            dateTh.className = 'px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-16';
+            const th = document.createElement('th');
+            th.className = 'px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-16';
 
             const dayDiv = document.createElement('div');
             dayDiv.className = 'text-xs text-gray-400';
@@ -350,133 +333,122 @@
             dateDiv.className = 'font-medium';
             dateDiv.textContent = formatShortDate(currentDate);
 
-            dateTh.appendChild(dayDiv);
-            dateTh.appendChild(dateDiv);
-            headerRow.appendChild(dateTh);
+            th.appendChild(dayDiv);
+            th.appendChild(dateDiv);
+            headerRow.appendChild(th);
 
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Kolom total
-        const totalPresentTh = document.createElement('th');
-        totalPresentTh.className = 'px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-green-50';
-        totalPresentTh.textContent = 'Total Hadir';
-        headerRow.appendChild(totalPresentTh);
+        // Total columns
+        const totals = [{
+                text: 'Total Hadir',
+                bg: 'bg-green-50'
+            },
+            {
+                text: 'Total Izin',
+                bg: 'bg-blue-50'
+            },
+            {
+                text: 'Total Hari',
+                bg: 'bg-gray-50'
+            }
+        ];
 
-        const totalLeaveTh = document.createElement('th');
-        totalLeaveTh.className = 'px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50';
-        totalLeaveTh.textContent = 'Total Izin';
-        headerRow.appendChild(totalLeaveTh);
-
-        const totalDaysTh = document.createElement('th');
-        totalDaysTh.className = 'px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50';
-        totalDaysTh.textContent = 'Total Hari';
-        headerRow.appendChild(totalDaysTh);
+        totals.forEach(t => {
+            const th = document.createElement('th');
+            th.className = `px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider ${t.bg}`;
+            th.textContent = t.text;
+            headerRow.appendChild(th);
+        });
     }
 
-    // Fungsi untuk merender body tabel
+    // Render body tabel
     function renderTableBody(attendanceData, startDate, endDate) {
         const tableBody = document.getElementById('tableBody');
         tableBody.innerHTML = '';
 
-        let totalPresent = 0;
-        let totalLeave = 0;
-        let totalWorkingDays = getWorkingDays(startDate, endDate);
+        const totalWorkingDays = getWorkingDays(startDate, endDate);
 
-        employees.forEach((employee, index) => {
+        employees.forEach((emp, idx) => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
 
-            // Kolom No
+            // No
             const noTd = document.createElement('td');
             noTd.className = 'px-4 py-3 text-sm text-gray-900';
-            noTd.textContent = index + 1;
+            noTd.textContent = idx + 1;
             row.appendChild(noTd);
 
-            // Kolom Nama (sticky)
+            // Nama
             const nameTd = document.createElement('td');
             nameTd.className = 'px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10';
-            nameTd.innerHTML = `
-                    <div>${employee.name}</div>
-                    <div class="text-xs text-gray-500">${employee.employeeId}</div>
-                `;
+            nameTd.innerHTML = `<div>${emp.name}</div><div class="text-xs text-gray-500">${emp.employeeId}</div>`;
             row.appendChild(nameTd);
 
-            // Kolom Divisi
-            const divisionTd = document.createElement('td');
-            divisionTd.className = 'px-4 py-3 text-sm text-gray-900';
-            divisionTd.textContent = employee.division;
-            row.appendChild(divisionTd);
+            // Divisi
+            const divTd = document.createElement('td');
+            divTd.className = 'px-4 py-3 text-sm text-gray-900';
+            divTd.textContent = emp.division;
+            row.appendChild(divTd);
 
-            // Kolom tanggal
-            let employeePresent = 0;
-            let employeeLeave = 0;
-
+            // Tanggal
+            let presentCount = 0,
+                leaveCount = 0;
             const currentDate = new Date(startDate);
-            while (currentDate <= endDate) {
-                const dateTd = document.createElement('td');
-                dateTd.className = 'px-2 py-2 text-center';
 
-                const attendance = attendanceData[employee.id].find(a =>
-                    a.date.toDateString() === currentDate.toDateString()
-                );
+            while (currentDate <= endDate) {
+                const td = document.createElement('td');
+                td.className = 'px-2 py-2 text-center';
+
+                let statusClass = '',
+                    statusText = '';
+
+                const attendance = attendanceData[emp.id]?.find(a => a.date.toDateString() === currentDate.toDateString());
 
                 if (attendance) {
-                    let statusClass = '';
-                    let statusText = '';
-
-                    switch (attendance.status) {
-                        case 'present':
-                            statusClass = 'status-present';
-                            statusText = 'H';
-                            employeePresent++;
-                            totalPresent++;
-                            break;
-                        case 'late':
-                            statusClass = 'status-late';
-                            statusText = 'T';
-                            employeePresent++;
-                            totalPresent++;
-                            break;
-                        case 'leave':
-                            statusClass = 'status-leave';
-                            statusText = 'I';
-                            employeeLeave++;
-                            totalLeave++;
-                            break;
-                        case 'holiday':
-                            statusClass = 'status-holiday';
-                            statusText = 'L';
-                            break;
-                        default:
-                            statusClass = 'status-absent';
-                            statusText = 'A';
+                    if (attendance.status === 'hadir') {
+                        statusClass = 'status-present';
+                        statusText = 'H';
+                        presentCount++;
+                    } else if (attendance.status === 'izin') {
+                        statusClass = 'status-leave';
+                        statusText = 'I';
+                        leaveCount++;
                     }
-
-                    const statusSpan = document.createElement('span');
-                    statusSpan.className = `inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${statusClass}`;
-                    statusSpan.textContent = statusText;
-                    statusSpan.title = `${formatDate(currentDate)}: ${attendance.status}`;
-                    dateTd.appendChild(statusSpan);
+                } else {
+                    if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+                        statusClass = 'status-holiday';
+                        statusText = 'L';
+                    } else {
+                        statusClass = 'status-absent';
+                        statusText = '';
+                    }
                 }
 
-                row.appendChild(dateTd);
+                const span = document.createElement('span');
+                span.className = `inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${statusClass}`;
+                span.textContent = statusText;
+                span.title = `${formatDate(currentDate)}: ${attendance ? attendance.status : 'kosong'}`;
+
+                td.appendChild(span);
+                row.appendChild(td);
                 currentDate.setDate(currentDate.getDate() + 1);
             }
 
-            // Kolom total hadir
+            // Total hadir
             const totalPresentTd = document.createElement('td');
             totalPresentTd.className = 'px-4 py-3 text-sm text-center font-medium text-green-600 bg-green-50';
-            totalPresentTd.textContent = employeePresent;
+            totalPresentTd.textContent = presentCount;
             row.appendChild(totalPresentTd);
 
-            // Kolom total izin
+            // Total izin
             const totalLeaveTd = document.createElement('td');
             totalLeaveTd.className = 'px-4 py-3 text-sm text-center font-medium text-blue-600 bg-blue-50';
-            totalLeaveTd.textContent = employeeLeave;
+            totalLeaveTd.textContent = leaveCount;
             row.appendChild(totalLeaveTd);
 
-            // Kolom total hari
+            // Total hari
             const totalDaysTd = document.createElement('td');
             totalDaysTd.className = 'px-4 py-3 text-sm text-center font-medium text-gray-600 bg-gray-50';
             totalDaysTd.textContent = totalWorkingDays;
@@ -485,44 +457,39 @@
             tableBody.appendChild(row);
         });
 
-        // Update summary cards
+        // Update summary
         document.getElementById('totalEmployees').textContent = employees.length;
-        document.getElementById('avgAttendance').textContent = Math.round((totalPresent / (employees.length * totalWorkingDays)) * 100) + '%';
-        document.getElementById('totalLate').textContent = '0'; // Tidak dihitung dalam contoh ini
-        document.getElementById('totalLeave').textContent = totalLeave;
+        document.getElementById('avgAttendance').textContent = Math.round((employees.reduce((sum, emp) => {
+            return sum + (attendanceData[emp.id]?.filter(a => a.status === 'hadir' || a.status === 'izin').length || 0);
+        }, 0) / (employees.length * totalWorkingDays)) * 100) + '%';
+        document.getElementById('totalLeave').textContent = employees.reduce((sum, emp) => {
+            return sum + (attendanceData[emp.id]?.filter(a => a.status === 'izin').length || 0);
+        }, 0);
     }
 
-    // Fungsi untuk menampilkan rekap berdasarkan periode
+    // Tampilkan rekap
     function showAttendanceReport(startDate, endDate) {
-        // Tampilkan loading
         document.getElementById('loadingState').classList.remove('hidden');
         document.getElementById('emptyState').classList.add('hidden');
         document.getElementById('attendanceTable').classList.add('hidden');
 
-        // Simulasi loading
-        setTimeout(() => {
-            const attendanceData = generateAttendanceData(startDate, endDate);
-
+        generateAttendanceData(startDate, endDate).then(attendanceData => {
             renderTableHeader(startDate, endDate);
             renderTableBody(attendanceData, startDate, endDate);
 
-            // Update info
             document.getElementById('periodText').textContent =
                 `Periode: ${formatDate(startDate)} - ${formatDate(endDate)}`;
-            document.getElementById('periodInfo').classList.remove('hidden');
 
+            document.getElementById('periodInfo').classList.remove('hidden');
             document.getElementById('tableInfo').textContent =
                 `Menampilkan data dari ${formatDate(startDate)} hingga ${formatDate(endDate)}`;
 
-            // Sembunyikan loading, tampilkan tabel
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('attendanceTable').classList.remove('hidden');
-        }, 1000);
+        });
     }
 
-    // Inisialisasi saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
-        // Set default date (bulan ini)
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -530,48 +497,80 @@
         document.getElementById('startDate').valueAsDate = firstDay;
         document.getElementById('endDate').valueAsDate = lastDay;
 
-        // Tampilkan empty state
         document.getElementById('emptyState').classList.remove('hidden');
 
-        // Event listener untuk form filter
         document.getElementById('filterForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
             const startDate = new Date(document.getElementById('startDate').value);
             const endDate = new Date(document.getElementById('endDate').value);
+            $('#fstart').val(startDate.toISOString().split('T')[0]);
+            $('#fend').val(endDate.toISOString().split('T')[0]);
 
             if (startDate > endDate) {
                 alert('Tanggal mulai tidak boleh lebih besar dari tanggal selesai');
                 return;
             }
-
             showAttendanceReport(startDate, endDate);
         });
 
-        // Event listener untuk clear filter
         document.getElementById('clearFilter').addEventListener('click', function() {
             document.getElementById('periodInfo').classList.add('hidden');
             document.getElementById('emptyState').classList.remove('hidden');
             document.getElementById('attendanceTable').classList.add('hidden');
         });
 
-        // Event listener untuk export
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            alert('Fitur export akan mengunduh file Excel berisi rekap absensi');
-        });
+    });
 
-        // Event listener untuk print
-        document.getElementById('printBtn').addEventListener('click', function() {
-            window.print();
-        });
+    $('#export').on('click', function() {
+        const start = $(this).data('start');
+        const end = $(this).data('end');
 
-        // Event listener untuk navigasi periode
-        document.getElementById('prevPeriod').addEventListener('click', function() {
-            alert('Navigasi ke periode sebelumnya');
-        });
+        if (!start || !end) {
+            alert('Pilih periode terlebih dahulu!');
+            return;
+        }
 
-        document.getElementById('nextPeriod').addEventListener('click', function() {
-            alert('Navigasi ke periode berikutnya');
-        });
+        const $btn = $(this);
+        const originalText = $btn.html();
+        // Disable button & ubah text
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Downloading...');
+
+        $.ajax({
+            url: "<?= base_url('rekap/export_excel')  ?>",
+            type: 'post',
+            data: {
+                start: start,
+                end: end
+            },
+            xhrFields: {
+                responseType: 'blob' // untuk menerima file
+            },
+            success: function(data, status, xhr) {
+                // Dapatkan nama file dari header jika ada
+                const disposition = xhr.getResponseHeader('Content-Disposition');
+                let filename = 'rekap_absensi' + start + ' - ' + end + '.xlsx';
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    filename = disposition.split('filename=')[1].replace(/"/g, '');
+                }
+
+                // Buat blob & download
+                const blob = new Blob([data], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Kembalikan button
+                $btn.prop('disabled', false).html(originalText);
+            },
+            error: function() {
+                alert('Gagal download file. Silakan coba lagi.');
+                $btn.prop('disabled', false).html(originalText);
+            }
+        })
     });
 </script>

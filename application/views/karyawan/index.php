@@ -298,7 +298,6 @@
                     alert("Tidak ada kamera terdeteksi!");
                 }
             });
-
         }
 
         // 🔄 Ganti kamera (front/back)

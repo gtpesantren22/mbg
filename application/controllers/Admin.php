@@ -234,4 +234,51 @@ class Admin extends MY_Controller
 
         $this->load->view('admin/user', $data);
     }
+
+    public function getAttendanceStats()
+    {
+        $month = $this->input->get('month'); // format yyyy-mm
+        if (!$month) {
+            $month = date('Y-m'); // default bulan ini
+        }
+
+        $start = $month . '-01';
+        $end   = date('Y-m-t', strtotime($start));
+
+        // Ambil semua tanggal di bulan
+        $period = new DatePeriod(
+            new DateTime($start),
+            new DateInterval('P1D'),
+            new DateTime($end . ' +1 day')
+        );
+
+        $dates = [];
+        $hadirData = [];
+        $izinData = [];
+
+        foreach ($period as $date) {
+            $dates[] = $date->format('d');
+
+            // Hitung hadir
+            $hadirCount = $this->db
+                ->where('DATE(tanggal)', $date->format('Y-m-d'))
+                ->from('absensi')
+                ->count_all_results();
+
+            // Hitung izin
+            $izinCount = $this->db
+                ->where('DATE(tanggal)', $date->format('Y-m-d'))
+                ->from('izin')
+                ->count_all_results();
+
+            $hadirData[] = (int)$hadirCount;
+            $izinData[]  = (int)$izinCount;
+        }
+
+        echo json_encode([
+            'categories' => $dates,
+            'hadir'      => $hadirData,
+            'izin'       => $izinData
+        ]);
+    }
 }
