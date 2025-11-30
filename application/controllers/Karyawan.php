@@ -36,12 +36,12 @@ class Karyawan extends MY_Controller
         $lat = $this->input->post('latitude', true);
         $lon = $this->input->post('longitude', true);
 
-        $office_lat = -7.769238281790367;
-        $office_lon = 113.46372569518277;
+        // $office_lat = -7.769238281790367;
+        // $office_lon = 113.46372569518277;
 
         // FIXXX
-        // $office_lat = -7.756565336549751;
-        // $office_lon = 113.42277536544765;
+        $office_lat = -7.756565336549751;
+        $office_lon = 113.42277536544765;
         $radius_limit = 20; // meter 
 
         $distance = $this->haversine_distance($office_lat, $office_lon, $lat, $lon);
