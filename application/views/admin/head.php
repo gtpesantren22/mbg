@@ -119,15 +119,15 @@
                     <div x-show="open" x-transition @click.outside="open = false"
                         class="mt-1 ml-4 flex flex-col bg-primary-800 rounded-lg shadow-lg overflow-hidden">
 
+                        <a href="<?= base_url('admin/divisi') ?>"
+                            class="px-4 py-2 text-sm <?= $menu == 'divisi' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
+                            <i class="fas fa-sitemap mr-2"></i> Data Divisi
+                        </a>
                         <a href="<?= base_url('admin/karyawan') ?>"
                             class="px-4 py-2 text-sm <?= $menu == 'karyawan' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
                             <i class="fas fa-users mr-2"></i> Data Karyawan
                         </a>
 
-                        <a href="<?= base_url('admin/divisi') ?>"
-                            class="px-4 py-2 text-sm <?= $menu == 'divisi' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
-                            <i class="fas fa-sitemap mr-2"></i> Data Divisi
-                        </a>
 
                         <a href="<?= base_url('admin/users') ?>"
                             class="px-4 py-2 text-sm <?= $menu == 'users' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
@@ -201,15 +201,15 @@
                         <div x-show="open" x-transition @click.outside="open = false"
                             class="mt-1 ml-4 flex flex-col bg-primary-800 rounded-lg shadow-lg overflow-hidden">
 
+                            <a href="<?= base_url('admin/divisi') ?>"
+                                class="px-4 py-2 text-sm <?= $menu == 'divisi' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
+                                <i class="fas fa-arrow-right mr-2"></i> Data Divisi
+                            </a>
                             <a href="<?= base_url('admin/karyawan') ?>"
                                 class="px-4 py-2 text-sm <?= $menu == 'karyawan' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
                                 <i class="fas fa-arrow-right mr-2"></i> Data Karyawan
                             </a>
 
-                            <a href="<?= base_url('admin/divisi') ?>"
-                                class="px-4 py-2 text-sm <?= $menu == 'divisi' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
-                                <i class="fas fa-arrow-right mr-2"></i> Data Divisi
-                            </a>
                             <a href="<?= base_url('admin/users') ?>"
                                 class="px-4 py-2 text-sm <?= $menu == 'users' ? 'bg-primary-700 text-white' : 'text-primary-100 hover:bg-primary-600' ?>">
                                 <i class="fas fa-arrow-right mr-2"></i> Data User Akun

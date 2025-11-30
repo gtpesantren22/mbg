@@ -60,4 +60,8 @@ class Modeldata extends CI_Model
             return false;
         }
     }
+    public function query($qr)
+    {
+        return $this->db->query($qr);
+    }
 }

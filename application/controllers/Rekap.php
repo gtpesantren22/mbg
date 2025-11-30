@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class Rekap extends MY_Controller
 {
@@ -64,7 +65,8 @@ class Rekap extends MY_Controller
         SELECT 
             employee_id,
             DATE(tanggal) AS date,
-            'hadir' AS status
+            'hadir' AS status,
+            masuk, pulang
         FROM absensi
         WHERE tanggal BETWEEN '$start' AND '$end'
     ")->result();
@@ -73,7 +75,9 @@ class Rekap extends MY_Controller
         SELECT 
             employee_id,
             DATE(tanggal) AS date,
-            'izin' AS status
+            'izin' AS status,
+            '-' AS masuk,
+            '-' AS pulang
         FROM izin
         WHERE tanggal BETWEEN '$start' AND '$end'
     ")->result();
@@ -107,7 +111,7 @@ class Rekap extends MY_Controller
         // 4. Isi data berdasarkan records dari DB
         foreach ($records as $r) {
             $result[$r->employee_id]["records"][$r->date] =
-                ($r->status == "hadir" ? "Hadir" : "Izin");
+                ($r->status == "hadir" ? $r->masuk . '|' . $r->pulang : "Izin");
         }
 
         // 5. Isi tanggal kosong
@@ -130,165 +134,201 @@ class Rekap extends MY_Controller
         return $result;
     }
 
-
     public function export_excel()
     {
         while (ob_get_level()) {
             ob_end_clean();
         }
-
         $start = $this->input->post('start', TRUE);
         $end   = $this->input->post('end', TRUE);
-
-        $data = $this->buildAttendanceData($start, $end);
-
-        // Kumpulkan tanggal
-        $allDates = [];
-        foreach ($data as $row) {
-            foreach ($row['records'] as $date => $status) {
-                $allDates[$date] = $date;
-            }
+        // validasi sederhana
+        if (!$start || !$end) {
+            show_error('Parameter tanggal tidak lengkap', 400);
+            return;
         }
-        sort($allDates);
+        $data = $this->model->query("SELECT a.*, b.division_name FROM employees a LEFT JOIN divisions b ON a.division_id=b.id ")->result(); // ambil data dari database
+
+        // generate tanggal dinamis (YYYY-mm-dd)
+        $dates = [];
+        $current = strtotime($start);
+        $endDate = strtotime($end);
+        if ($current === false || $endDate === false || $current > $endDate) {
+            show_error('Range tanggal tidak valid', 400);
+            return;
+        }
+        while ($current <= $endDate) {
+            $dates[] = date('Y-m-d', $current);
+            $current = strtotime('+1 day', $current);
+        }
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->freezePane('A2');
+        // Kolom awal tetap (A-D)
+        $sheet->mergeCells("A1:A2");
+        $sheet->setCellValue("A1", "No");
+        $sheet->mergeCells("B1:B2");
+        $sheet->setCellValue("B1", "ID");
+        $sheet->mergeCells("C1:C2");
+        $sheet->setCellValue("C1", "Nama");
+        $sheet->mergeCells("D1:D2");
+        $sheet->setCellValue("D1", "Divisi");
+        $sheet->getStyle("A1:D2")->getFont()->setBold(true);
 
-        // Header utama
-        $headers = ['No', 'ID', 'Nama', 'Divisi'];
-        $colIndex = 1;
+        // Mulai dari kolom ke-5 (E) sebagai index integer
+        $colIndex = 5;
+        $dateColors = ['E0F7FA', 'FFF3E0']; // warna selang 2 tanggal
+        $colorIndex = 0;
 
-        foreach ($headers as $h) {
-            $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->setCellValue($colLetter . '1', $h);
-            $colIndex++;
+        // Loop untuk tanggal
+        foreach ($dates as $date) {
+            $niceDate = date('j M', strtotime($date)); // ex: '1 Nov'
+
+            // convert index integer ke huruf kolom
+            $colLetter1 = Coordinate::stringFromColumnIndex($colIndex);       // ex: 'E'
+            $colLetter2 = Coordinate::stringFromColumnIndex($colIndex + 1);   // ex: 'F'
+
+            // Merge header tanggal (baris 1)
+            $sheet->mergeCells("{$colLetter1}1:{$colLetter2}1");
+            $sheet->setCellValue("{$colLetter1}1", $niceDate);
+
+            // Subheader Masuk / Pulang di baris 2
+            $sheet->setCellValue("{$colLetter1}2", "Masuk");
+            $sheet->setCellValue("{$colLetter2}2", "Pulang");
+
+            // Styling background untuk tanggal (selang 2 warna)
+            $fillColor = $dateColors[$colorIndex % 2];
+            $sheet->getStyle("{$colLetter1}1:{$colLetter2}2")->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB($fillColor);
+            $sheet->getStyle("{$colLetter1}1:{$colLetter2}2")->getFont()->setBold(true);
+
+            // Lompat 2 kolom untuk tanggal berikutnya
+            $colIndex += 2;
+            $colorIndex++;
         }
 
-        // Header tanggal
-        foreach ($allDates as $date) {
+        $totals = ['TOTAL MASUK', 'TOTAL IZIN', 'TOTAL HARI'];
+        foreach ($totals as $total) {
             $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->setCellValue($colLetter . '1', date("d M Y", strtotime($date)));
+            $sheet->mergeCells("{$colLetter}1:{$colLetter}2");
+            $sheet->setCellValue("{$colLetter}1", $total);
+
+            // Styling header total
+            $sheet->getStyle("{$colLetter}1:{$colLetter}2")->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('C8E6C9'); // hijau lembut
+            $sheet->getStyle("{$colLetter}1:{$colLetter}2")->getBorders()->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+            $sheet->getStyle("{$colLetter}1:{$colLetter}2")->getFont()->setBold(true);
+
             $colIndex++;
         }
+        // last column letter untuk styling nanti
+        $lastColLetter = Coordinate::stringFromColumnIndex($colIndex - 1);
 
-        $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-        $sheet->setCellValue($colLetter . '1', 'Total Hadir');
-        $colIndex++;
-        $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-        $sheet->setCellValue($colLetter . '1', 'Total Izin');
-        $colIndex++;
-        $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-        $sheet->setCellValue($colLetter . '1', 'Total Hari');
-        $colIndex++;
-
-
-        // Kolom terakhir
-        $lastCol = Coordinate::stringFromColumnIndex($colIndex - 1);
-
-        // Style header
-        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
-            'font' => ['bold' => true],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => 'DCE6F1']
+        // styling header (baris 1-2)
+        $sheet->getStyle("A1:{$lastColLetter}2")->applyFromArray([
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
             ],
             'borders' => [
                 'allBorders' => ['borderStyle' => Border::BORDER_THIN]
             ]
         ]);
 
-        // Isi data
-        $rowNum = 2;
+        $rowNum = 3;
         $no = 1;
 
-        foreach ($data as $rowData) {
+        foreach ($data as $item) {
+            // Kolom awal
+            $sheet->setCellValue("A{$rowNum}", $no++);
+            $sheet->setCellValue("B{$rowNum}", $item->employee_id);
+            $sheet->setCellValue("C{$rowNum}", $item->full_name);
+            $sheet->setCellValue("D{$rowNum}", $item->division_name);
 
-            // Kolom default
-            $default = [
-                1 => $no++,
-                2 => $rowData['employee_id'],
-                3 => $rowData['name'],
-                4 => $rowData['division'],
-            ];
-
-            foreach ($default as $c => $v) {
-                $colLetter = Coordinate::stringFromColumnIndex($c);
-                $sheet->setCellValue($colLetter . $rowNum, $v);
-            }
-
-            // Kolom tanggal mulai dari index 5
-            $colIndex = 5;
-
-            $totalHadir = 0;
+            $colIndex = 5; // mulai dari kolom E
+            $totalMasuk = 0;
             $totalIzin  = 0;
-            $totalHari  = count($allDates);
+            $totalHari  = count($dates);
 
-            foreach ($allDates as $date) {
-                $status = $rowData['records'][$date] ?? '-';
-                if ($status === 'Kosong') $status = '-';
+            foreach ($dates as $date) {
+                // ambil data absensi
+                $dayOfWeek = date('N', strtotime($date)); // 1=Mon ... 7=Sun
+                $fillColor = $dateColors[$colorIndex % 2];
+                // konversi kolom index ke huruf
+                $colLetterMasuk  = Coordinate::stringFromColumnIndex($colIndex);
+                $colLetterPulang = Coordinate::stringFromColumnIndex($colIndex + 1);
 
-                $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-                $sheet->setCellValue($colLetter . $rowNum, $status);
+                $absen = $this->model->getBy2('absensi', 'tanggal', $date, 'employee_id', $item->id)->row();
+                $izin = $this->model->getBy2('izin', 'tanggal', $date, 'employee_id', $item->id)->row();
 
-                if ($status == 'Hadir') $totalHadir++;
-                if ($status == 'Izin')  $totalIzin++;
+                $jamMasuk  = ($absen && !empty($absen->masuk))  ? date('H:i', strtotime($absen->masuk))  : '-';
+                $jamPulang = ($absen && !empty($absen->pulang)) ? date('H:i', strtotime($absen->pulang)) : '-';
 
-                // Warna cell
-                if ($status == 'Hadir') {
-                    $color = 'C6EFCE';
-                } elseif ($status == 'Izin') {
-                    $color = 'FFF2CC';
-                } elseif ($status == 'Kosong') {
-                    $color = 'F4CCCC';
+                $sheet->getStyle("{$colLetterMasuk}{$rowNum}:{$colLetterPulang}{$rowNum}")
+                    ->getFill()->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB($fillColor);
+                if ($izin) {
+                    $sheet->setCellValue("{$colLetterMasuk}{$rowNum}", "Izin");
+                    $sheet->setCellValue("{$colLetterPulang}{$rowNum}", "Izin");
+                    $sheet->getStyle("{$colLetterMasuk}{$rowNum}:{$colLetterPulang}{$rowNum}")
+                        ->getFill()
+                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('FFFF00'); // merah muda lembut
+                } elseif ($dayOfWeek >= 6 && $jamMasuk == '-' && $jamPulang == '-') {
+                    $sheet->setCellValue("{$colLetterMasuk}{$rowNum}", "Libur");
+                    $sheet->setCellValue("{$colLetterPulang}{$rowNum}", "Libur");
+                    // Text warna merah
+                    $sheet->getStyle("{$colLetterMasuk}{$rowNum}:{$colLetterPulang}{$rowNum}")
+                        ->getFont()->setBold(true)
+                        ->getColor()
+                        ->setRGB('FF0000'); // merah cerah
                 } else {
-                    $color = 'FFFFFF';
+                    $sheet->setCellValue("{$colLetterMasuk}{$rowNum}", $jamMasuk);
+                    $sheet->setCellValue("{$colLetterPulang}{$rowNum}", $jamPulang);
                 }
 
-                $sheet->getStyle("{$colLetter}{$rowNum}")->applyFromArray([
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'color' => ['rgb' => $color]
-                    ],
-                    'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN]
-                    ]
-                ]);
+                if ($jamMasuk != '-') $totalMasuk++;
+                if ($izin) $totalIzin++;
 
-                $colIndex++;
+                // Styling background & border
+
+                $sheet->getStyle("{$colLetterMasuk}{$rowNum}:{$colLetterPulang}{$rowNum}")
+                    ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+
+                $colIndex += 2;
+                $colorIndex++;
             }
-            // Total Hadir
-            $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->setCellValue($colLetter . $rowNum, $totalHadir);
-            $colIndex++;
-            // Total Izin
-            $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->setCellValue($colLetter . $rowNum, $totalIzin);
-            $colIndex++;
-            // Total Hari
-            $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->setCellValue($colLetter . $rowNum, $totalHari);
-            $colIndex++;
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex) . $rowNum, $totalMasuk);
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex + 1) . $rowNum, $totalIzin);
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex + 2) . $rowNum, $totalHari);
+
+            // Border total
+            $sheet->getStyle(
+                Coordinate::stringFromColumnIndex($colIndex) . $rowNum . ':' .
+                    Coordinate::stringFromColumnIndex($colIndex + 2) . $rowNum
+            )->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
             $rowNum++;
         }
 
-        // Autosize
-        for ($i = 1; $i <= ($colIndex - 1); $i++) {
+        // Autosize (gunakan numeric loop dari 1 sampai last index)
+        $lastColIndex = Coordinate::columnIndexFromString($lastColLetter);
+        for ($i = 1; $i <= $lastColIndex; $i++) {
             $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($i))->setAutoSize(true);
         }
 
         // Output Excel
-        $filename = "Rekap_Absensi_" . date("Ymd_His") . ".xlsx";
-
+        $filename = "Absensi_{$start}_sd_{$end}.xlsx";
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment; filename=\"$filename\"");
         header('Cache-Control: max-age=0');
-        header('Pragma: public');
 
         $writer = new Xlsx($spreadsheet);
-        $writer->save("php://output");
+        $writer->save('php://output');
         exit;
     }
 }

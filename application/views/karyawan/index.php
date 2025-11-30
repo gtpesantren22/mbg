@@ -6,7 +6,17 @@
     <div class="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-gray-100">
         <h2 class="text-gray-500 text-sm font-medium mb-2">Status Absensi Hari Ini</h2>
 
-        <?php if (!$data) { ?>
+        <?php if ($izin) { ?>
+            <div class="flex items-center justify-between">
+                <div id="" class="text-2xl font-bold text-amber-600">Izin</div>
+                <div id="" class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-warning text-amber-400 text-xl"></i>
+                </div>
+            </div>
+            <div id="statusTime" class="text-amber-500 text-sm mt-2">
+                Hari ini anda izin <?= $izin->alasan ?>
+            </div>
+        <?php } elseif (!$data) { ?>
             <!-- Belum Hadir -->
             <div class="flex items-center justify-between">
                 <div id="" class="text-2xl font-bold text-gray-700">Belum Hadir</div>
@@ -32,7 +42,12 @@
     <div class="grid grid-cols-2 gap-4 mb-8">
         <!-- Tombol Absen Masuk -->
         <?php
-        if (!$data) {
+        if ($izin) {
+            $inbtn = 'bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-2xl p-5 shadow-lg transform flex flex-col items-center justify-center opacity-70 cursor-not-allowed';
+            $outbtn = 'bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-2xl p-5 shadow-lg transform flex flex-col items-center justify-center opacity-70 cursor-not-allowed';
+            $indsbld = 'disabled';
+            $outdsbld = 'disabled';
+        } else if (!$data) {
             $inbtn = 'bg-gradient-to-r from-secondary-600 to-secondary-700 text-white rounded-2xl p-5 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-200 flex flex-col items-center justify-center';
             $outbtn = 'bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-2xl p-5 shadow-lg transform flex flex-col items-center justify-center opacity-70 cursor-not-allowed';
             $indsbld = '';
@@ -239,6 +254,7 @@
                     height: 250
                 }
             };
+            $('#infoProses').text('')
             html5QrCode.start(
                 cameraId,
                 config,

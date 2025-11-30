@@ -17,8 +17,9 @@ class Karyawan extends MY_Controller
         $user = $this->session->userdata('user');
         $data['title'] = 'Dashboard Karyawan';
         $data['user'] = $user;
-        $userId = $user['id'];
+        $userId = $user['emid'];
         $isday = date('Y-m-d');
+        $data['izin'] = $this->model->getBy2('izin', 'employee_id', $userId, 'tanggal', $isday)->row();
         $data['data'] = $this->model->getBy2('absensi', 'employee_id', $userId, 'tanggal', $isday)->row();
         $data['hasil'] = $this->db->query("SELECT * FROM absensi WHERE employee_id = $userId ORDER BY tanggal DESC ")->result();
         $data['all'] = $this->db->query("SELECT COUNT(*) AS jumlah FROM absensi WHERE employee_id = $userId ")->row();
@@ -30,14 +31,18 @@ class Karyawan extends MY_Controller
     {
         $user = $this->session->userdata('user');
         $isday = date('Y-m-d');
-
+        $userId = $user['emid'];
         $qrhasil = $this->input->post('qrhasil', TRUE);
         $lat = $this->input->post('latitude', true);
         $lon = $this->input->post('longitude', true);
 
-        $office_lat = -7.756565336549751;
-        $office_lon = 113.42277536544765;
-        $radius_limit = 25; // meter 
+        $office_lat = -7.769238281790367;
+        $office_lon = 113.46372569518277;
+
+        // FIXXX
+        // $office_lat = -7.756565336549751;
+        // $office_lon = 113.42277536544765;
+        $radius_limit = 20; // meter 
 
         $distance = $this->haversine_distance($office_lat, $office_lon, $lat, $lon);
         if ($distance > $radius_limit) {
@@ -60,7 +65,7 @@ class Karyawan extends MY_Controller
         $platform = $this->agent->platform();
         $device = $this->agent->is_mobile() ? $this->agent->mobile() : 'Desktop';
 
-        $cek = $this->model->getBy2('absensi', 'tanggal', $isday, 'employee_id', $user['id'])->row();
+        $cek = $this->model->getBy2('absensi', 'tanggal', $isday, 'employee_id', $userId)->row();
         $qrScret = $this->model->getBy('settings', 'setting_key', 'secret_qr')->row('setting_value');
 
         if ($qrScret != $qrhasil) {
@@ -70,7 +75,7 @@ class Karyawan extends MY_Controller
 
         if (!$cek) {
             $data = [
-                'employee_id' => $user['id'],
+                'employee_id' => $userId,
                 'tanggal' => $isday,
                 'masuk' => date('H:i:s'),
                 'ip_address' => $ip,
@@ -90,7 +95,12 @@ class Karyawan extends MY_Controller
                 exit;
             }
         } else {
-            $dave = $this->model->ubah2('absensi', 'tanggal', $isday, 'employee_id', $user['id'], ['pulang' => date('H:i:s')]);
+            $dtluser = $this->db->query("SELECT divisions.sampai as batas FROM employees JOIN divisions ON employees.division_id=divisions.id WHERE employees.id = $userId ")->row();
+            if (date('H:i:s') < $dtluser->batas) {
+                echo json_encode(['status' => 'error', 'message' => 'Belum waktunya absensi pulang. Jam Pulang ' . date('H:i', strtotime($dtluser->batas))]);
+                exit;
+            }
+            $dave = $this->model->ubah2('absensi', 'tanggal', $isday, 'employee_id', $userId, ['pulang' => date('H:i:s')]);
             if ($dave) {
                 echo json_encode(['status' => 'success', 'message' => 'Absensi pulang berhasil']);
                 exit;
@@ -120,7 +130,7 @@ class Karyawan extends MY_Controller
         $user = $this->session->userdata('user');
         $data['title'] = 'Riwayat Kehadiran';
         $data['user'] = $user;
-        $userId = $user['id'];
+        $userId = $user['emid'];
         $data['hasil'] = $this->db->query("SELECT * FROM absensi WHERE employee_id = $userId ORDER BY tanggal DESC ")->result();
 
         $this->load->view('karyawan/riwayat', $data);
