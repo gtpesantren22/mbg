@@ -36,13 +36,10 @@ class Scanner extends CI_Controller
 		$lat = $this->input->post('latitude', true);
 		$lon = $this->input->post('longitude', true);
 
-		$office_lat = -7.76911324001896;
-		$office_lon = 113.46371936805528;
+		$office_lat = $this->model->getBy('settings', 'setting_key', 'lat')->row('setting_value');
+		$office_lon = $this->model->getBy('settings', 'setting_key', 'lon')->row('setting_value');
 
-		// Koord OK
-		// $office_lat = -7.756565336549751;
-		// $office_lon = 113.42277536544765;
-		$radius_limit = 20; // meter 
+		$radius_limit = $this->model->getBy('settings', 'setting_key', 'radius')->row('setting_value'); // meter 
 
 		$distance = $this->haversine_distance($office_lat, $office_lon, $lat, $lon);
 		if ($distance > $radius_limit) {

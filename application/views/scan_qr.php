@@ -278,7 +278,7 @@
                 </div>
 
                 <!-- Right Panel (History & Results) - Full Height -->
-                <div class="right-panel w-full lg:w-1/2 flex flex-col">
+                <div class="right-panel w-1/2 flex flex-col">
                     <!-- Result Section -->
                     <div class="flex-1 flex flex-col space-y-4 lg:space-y-6">
                         <!-- Employee Info Card -->
