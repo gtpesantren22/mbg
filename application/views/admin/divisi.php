@@ -306,6 +306,8 @@
                     $('#idDv').val(res.id);
                     $('#nama').val(res.division_name);
                     $('#description').val(res.description);
+                    $('#dari').val(res.dari);
+                    $('#sampai').val(res.sampai);
                     // Trigger event AlpineJS untuk buka modal
                     window.dispatchEvent(new CustomEvent('open-modal', {
                         detail: 'editEmployee'
