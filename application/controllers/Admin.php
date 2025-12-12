@@ -94,7 +94,6 @@ class Admin extends MY_Controller
         $emdtl = $this->model->getBy('employees', 'id', $id)->row();
         $cek_akun = $this->model->getBy('users', 'employee_id', $id)->row();
         $simpanData = [
-            'employee_id' => generate_code('employees', 'employee_id', 'MBG', 3),
             'full_name' => $nama,
             'email' => $email,
             'phone_number' => $hp,
