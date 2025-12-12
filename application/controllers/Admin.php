@@ -54,6 +54,7 @@ class Admin extends MY_Controller
             'division_id' => $division,
             'hire_date' => date('Y-m-d'),
             'status' => $status,
+            'qrcode' => $this->uuid->v4()
         ];
 
 
@@ -90,6 +91,7 @@ class Admin extends MY_Controller
         $status = $this->input->post('status', TRUE);
         $createAccount = $this->input->post('createAccount', TRUE);
 
+        $emdtl = $this->model->getBy('employees', 'id', $id)->row();
         $cek_akun = $this->model->getBy('users', 'employee_id', $id)->row();
         $simpanData = [
             'employee_id' => generate_code('employees', 'employee_id', 'MBG', 3),
@@ -99,6 +101,7 @@ class Admin extends MY_Controller
             'division_id' => $division,
             'hire_date' => date('Y-m-d'),
             'status' => $status,
+            'qrcode' => $emdtl && $emdtl->qrcode ? $emdtl->qrcode : $this->uuid->v4()
         ];
 
         if ($createAccount && !$cek_akun) {
@@ -110,7 +113,7 @@ class Admin extends MY_Controller
                 'v_password' => $pss,
                 'name' => $nama,
                 'role' => 'karyawan',
-                'employee_id' => $id
+                'employee_id' => $id,
             ];
             $this->model->simpan('users', $acountData);
         }
