@@ -15,7 +15,8 @@ class Scanner extends CI_Controller
 	}
 	public function qrSannerEmployeesByIDQR()
 	{
-		$this->load->view('scan_qr');
+		$scannerTheme = $this->model->getBy('settings', 'setting_key', 'scannertheme')->row('setting_value');
+		$this->load->view($scannerTheme);
 	}
 
 	public function getHistory()

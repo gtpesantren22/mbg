@@ -46,16 +46,18 @@
             }
         }
     </script>
+
     <style>
-        /* Full height layout */
         html,
         body {
             height: 100%;
             overflow-x: hidden;
             overflow-y: auto;
+            background: #f8fafc;
+            color: #111827;
         }
 
-        /* Scanner styles */
+        /* Scanner */
         #preview {
             width: 100%;
             height: 100%;
@@ -65,7 +67,7 @@
         .scanner-container {
             position: relative;
             width: 100%;
-            height: 100%;
+            min-height: 60vh;
             overflow: hidden;
             border-radius: 20px;
             background: #000;
@@ -73,24 +75,22 @@
 
         .scanner-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            inset: 50%;
             transform: translate(-50%, -50%);
             width: 60%;
             height: 60%;
-            border: 3px solid #4caf50;
+            border: 3px solid #43a047;
             border-radius: 20px;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, .45);
             z-index: 10;
         }
 
-        /* Scan line animation */
         @keyframes scan {
-            0% {
-                top: 0%;
+            from {
+                top: 0;
             }
 
-            100% {
+            to {
                 top: 100%;
             }
         }
@@ -99,12 +99,10 @@
             position: absolute;
             width: 100%;
             height: 4px;
-            background: linear-gradient(to right, transparent, #4caf50, #4caf50, transparent);
+            background: linear-gradient(to right, transparent, #22c55e, transparent);
             animation: scan 2s linear infinite;
-            z-index: 11;
         }
 
-        /* Corner borders */
         .corner {
             position: absolute;
             width: 30px;
@@ -117,7 +115,6 @@
             left: -4px;
             border-right: none;
             border-bottom: none;
-            border-radius: 15px 0 0 0;
         }
 
         .corner-tr {
@@ -125,7 +122,6 @@
             right: -4px;
             border-left: none;
             border-bottom: none;
-            border-radius: 0 15px 0 0;
         }
 
         .corner-bl {
@@ -133,7 +129,6 @@
             left: -4px;
             border-right: none;
             border-top: none;
-            border-radius: 0 0 0 15px;
         }
 
         .corner-br {
@@ -141,77 +136,30 @@
             right: -4px;
             border-left: none;
             border-top: none;
-            border-radius: 0 0 15px 0;
         }
 
-        /* Success animation */
-        @keyframes successPulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .success-pulse {
-            animation: successPulse 0.5s ease-in-out;
-        }
-
-        /* Custom scrollbar */
+        /* Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #374151;
-            border-radius: 4px;
+            background: #e5e7eb;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #4caf50;
-            border-radius: 4px;
+            background: #43a047;
         }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #388e3c;
-        }
-
-        /* Full screen adjustments */
-        .full-screen-container {
-            height: calc(100vh - 80px);
-            /* Kurangi tinggi header */
-        }
-
-        /* Responsive breakpoints */
-        @media (max-width: 768px) {
-            body {
-                overflow-y: auto;
-            }
-
-            .full-screen-container {
-                height: calc(100vh - 140px);
-                /* Lebih tinggi untuk mobile */
-            }
-
+        /* Mobile */
+        @media (max-width:768px) {
             .split-layout {
                 flex-direction: column;
             }
 
             .left-panel,
             .right-panel {
-                height: auto !important;
-                min-height: auto !important;
-            }
-
-            .scanner-container {
-                height: auto;
-                min-height: 60vh;
+                width: 100% !important;
             }
 
             .scanner-overlay {
@@ -219,15 +167,12 @@
                 height: 80%;
             }
         }
-
-        /* Smooth transitions */
-        .transition-all {
-            transition: all 0.3s ease;
-        }
     </style>
+
 </head>
 
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body class="bg-slate-50 text-gray-900 min-h-screen flex flex-col">
+
     <!-- HEADER -->
     <div class="w-full flex items-center justify-between px-4 py-2 
             bg-gradient-to-r from-primary-600 to-primary-700 text-white">
@@ -263,22 +208,18 @@
     </div>
 
 
-    <!-- Main Content - Full Screen Split Layout -->
-    <main class="flex-1">
-        <div class="w-full h-full px-4 lg:px-8 py-4">
-            <div class="flex split-layout gap-4 lg:gap-8 h-full">
-                <!-- Left Panel (Scanner) - Full Height -->
-                <div class="left-panel flex-1 flex flex-col">
-                    <!-- Scanner Container -->
-                    <div class="bg-gray-800 rounded-2xl p-4 lg:p-6 flex-1 flex flex-col">
-                        <div class="text-center mb-4 lg:mb-6">
-                            <h2 class="text-lg lg:text-xl font-semibold mb-2">Arahkan Kamera ke QR Code</h2>
-                            <p class="text-gray-300 text-sm lg:text-base">Pastikan QR Code berada dalam area kotak scanner</p>
-                        </div>
+    <main class="flex-1 overflow-y-auto">
+        <div class="px-4 lg:px-8 py-4">
+            <div class="flex split-layout gap-6">
 
-                        <!-- Camera Container - Full Height -->
-                        <div class="scanner-container flex-1 mb-4 lg:mb-6">
-                            <!-- Scanner Overlay -->
+                <!-- LEFT -->
+                <div class="left-panel flex-1">
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col">
+
+                        <h2 class="text-xl font-semibold text-center mb-2">Arahkan Kamera ke QR Code</h2>
+                        <p class="text-gray-600 text-center mb-4">Pastikan QR Code berada di dalam kotak</p>
+
+                        <div class="scanner-container mb-4">
                             <div class="scanner-overlay">
                                 <div class="corner corner-tl"></div>
                                 <div class="corner corner-tr"></div>
@@ -286,103 +227,55 @@
                                 <div class="corner corner-br"></div>
                                 <div class="scan-line"></div>
                             </div>
-
-                            <!-- Video Preview -->
                             <video id="preview" playsinline></video>
 
-                            <!-- Camera Off State -->
-                            <div id="cameraOff" class="absolute inset-0 flex items-center justify-center bg-black">
-                                <div class="text-center p-6 lg:p-8">
-                                    <div class="w-16 h-16 lg:w-20 lg:h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <i class="fas fa-video-slash text-gray-400 text-2xl lg:text-3xl"></i>
-                                    </div>
-                                    <p class="text-gray-300 mb-4 text-base lg:text-lg">Kamera tidak aktif</p>
-                                    <button id="startCamera" class="bg-primary-600 hover:bg-primary-700 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl transition text-base lg:text-lg">
-                                        <i class="fas fa-play mr-2 lg:mr-3"></i>Aktifkan Kamera
-                                    </button>
-                                </div>
+                            <div id="cameraOff" class="absolute inset-0 bg-white/90 flex items-center justify-center">
+                                <button id="startCamera" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl">
+                                    Aktifkan Kamera
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Camera Controls -->
-                        <div class="flex justify-center space-x-4 lg:space-x-6">
-                            <button id="switchCamera" class="bg-gray-700 hover:bg-gray-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl transition flex items-center text-base lg:text-lg">
-                                <i class="fas fa-sync-alt mr-2 lg:mr-3"></i> Ganti Kamera
-                            </button>
-                        </div>
+                        <button id="switchCamera" class="mx-auto bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-xl">
+                            Ganti Kamera
+                        </button>
+
                     </div>
                 </div>
 
-                <!-- Right Panel (History & Results) - Full Height -->
-                <div class="right-panel w-1/2 flex flex-col">
-                    <!-- Result Section -->
-                    <div class="flex-1 flex flex-col space-y-4 lg:space-y-6">
+                <!-- RIGHT -->
+                <div class="right-panel w-1/2 flex flex-col gap-6">
 
-                        <!-- Attendance Status -->
-                        <div id="attendanceStatus" class=" bg-gray-800 rounded-2xl p-4 lg:p-6">
-                            <div class="flex items-center mb-4">
-                                <div id="statusIcon" class="w-12 h-12 lg:w-16 lg:h-16 rounded-full flex items-center justify-center mr-4">
-                                    <!-- Icon akan diisi oleh JavaScript -->
-                                </div>
-                                <div class="flex-1">
-                                    <h3 id="statusTitle" class="text-lg lg:text-xl font-bold mb-1"></h3>
-                                    <p id="statusMessage" class="text-gray-300 text-sm lg:text-base"></p>
-                                </div>
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-2" id="statusTitle"></h3>
+                        <p class="text-gray-600 mb-4" id="statusMessage"></p>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-100 p-4 rounded-xl">
+                                <div class="text-sm text-gray-500">Waktu Scan</div>
+                                <div id="scanTime" class="font-bold"></div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-gray-900 rounded-xl p-3 lg:p-4">
-                                    <div class="text-xs lg:text-sm text-gray-400 mb-1">Waktu Scan</div>
-                                    <div id="scanTime" class="font-bold text-base lg:text-lg"></div>
-                                </div>
-                                <div class="bg-gray-900 rounded-xl p-3 lg:p-4">
-                                    <div class="text-xs lg:text-sm text-gray-400 mb-1">Status</div>
-                                    <div id="attendanceType" class="font-bold text-base lg:text-lg"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- History Section -->
-                        <div class="bg-gray-800 rounded-2xl p-4 lg:p-6 flex-1 flex flex-col">
-                            <div class="flex items-center justify-between mb-4 lg:mb-6">
-                                <h3 class="text-lg lg:text-xl font-semibold flex items-center">
-                                    <i class="fas fa-history mr-2 lg:mr-3"></i>
-                                    Riwayat Hari Ini
-                                </h3>
-                                <div class="text-right">
-                                    <div class="text-xl lg:text-2xl font-bold text-primary-400" id="totalAttendance">0</div>
-                                    <div class="text-xs lg:text-sm text-gray-400">Total Absensi</div>
-                                </div>
-                            </div>
-
-                            <!-- Stats Cards -->
-
-
-                            <!-- History List -->
-                            <div class="flex-1 overflow-hidden">
-                                <div id="attendanceHistory" class="h-full overflow-y-auto custom-scrollbar pr-2 space-y-3">
-                                    <!-- Riwayat akan diisi oleh JavaScript -->
-                                </div>
+                            <div class="bg-slate-100 p-4 rounded-xl">
+                                <div class="text-sm text-gray-500">Status</div>
+                                <div id="attendanceType" class="font-bold"></div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6 flex-1 flex flex-col">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-xl font-semibold">Riwayat Hari Ini</h3>
+                            <div class="text-primary-600 font-bold text-2xl" id="totalAttendance">0</div>
+                        </div>
+                        <div id="attendanceHistory" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </main>
-    <!-- Success Modal -->
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-gradient-to-b from-green-600 to-green-800 text-white rounded-2xl p-6 lg:p-8 max-w-sm lg:max-w-md w-full text-center">
-            <div class="w-16 h-16 lg:w-20 lg:h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 lg:mb-6">
-                <i class="fas fa-check text-white text-2xl lg:text-3xl"></i>
-            </div>
-            <h3 class="text-xl lg:text-2xl font-bold mb-2 lg:mb-3">Absensi Berhasil!</h3>
-            <p id="modalEmployeeName" class="text-base lg:text-lg mb-3 lg:mb-4"></p>
-            <p id="modalAttendanceTime" class="text-xl lg:text-2xl font-bold mb-6 lg:mb-8"></p>
-            <button id="closeModal" class="w-full bg-white text-green-600 py-3 lg:py-4 rounded-xl font-bold hover:bg-gray-100 transition text-base lg:text-lg">
-                OKE
-            </button>
-        </div>
-    </div>
+
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
         let attendanceHistory = [];
@@ -390,7 +283,6 @@
         let cameras = [];
         let activeCameraIndex = 0;
         let audioCtx;
-
         const btnFullscreen = document.getElementById('btnFullscreen');
         const iconExpand = document.getElementById('iconExpand');
         const iconCompress = document.getElementById('iconCompress');
@@ -472,7 +364,7 @@
                         historyItem.innerHTML = `
                             <div class="flex items-center min-w-0">
                                 <div class="w-10 h-10 lg:w-12 lg:h-12 ${record.type === 'Masuk' ? 'bg-green-600' : 'bg-blue-600'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                    <i class="fas ${record.type === 'Masuk' ? 'fa-sign-in-alt' : 'fa-sign-out-alt'} text-white text-sm lg:text-base"></i>
+                                    <i class="fas ${record.type === 'Masuk' ? 'fa-sign-in-alt' : 'fa-sign-out-alt'} text-gray-900 text-sm lg:text-base"></i>
                                 </div>
                                 <div class="min-w-0">
                                     <div class="font-medium truncate">${record.name}</div>
@@ -585,7 +477,7 @@
             const statusIcon = document.getElementById('statusIcon');
             statusIcon.className = 'w-12 h-12 lg:w-16 lg:h-16 rounded-full flex items-center justify-center mr-4 success-pulse';
             statusIcon.style.backgroundColor = isCheckIn ? '#2e7d32' : '#1565c0';
-            statusIcon.innerHTML = `<i class="fas ${isCheckIn ? 'fa-sign-in-alt' : 'fa-sign-out-alt'} text-white text-xl lg:text-2xl"></i>`;
+            statusIcon.innerHTML = `<i class="fas ${isCheckIn ? 'fa-sign-in-alt' : 'fa-sign-out-alt'} text-gray-900 text-xl lg:text-2xl"></i>`;
 
             document.getElementById('statusTitle').textContent = nama;
             document.getElementById('statusMessage').textContent = `Selamat ${isCheckIn ? 'bekerja' : 'pulang'}!`;
@@ -608,7 +500,7 @@
         function showError(message) {
             const statusIcon = document.getElementById('statusIcon');
             statusIcon.className = 'w-12 h-12 lg:w-16 lg:h-16 bg-red-600 rounded-full flex items-center justify-center mr-4';
-            statusIcon.innerHTML = `<i class="fas fa-times text-white text-xl lg:text-2xl"></i>`;
+            statusIcon.innerHTML = `<i class="fas fa-times text-gray-900 text-xl lg:text-2xl"></i>`;
             statusIcon.style.backgroundColor = '#ff2929ff';
 
             document.getElementById('statusTitle').textContent = 'Gagal';
