@@ -31,6 +31,17 @@ class Scanner extends CI_Controller
 
 		echo json_encode($data);
 	}
+	public function getHistoryAll()
+	{
+		$this->db->select('employees.employee_id, employees.full_name, absensi.masuk,absensi.pulang');
+		$this->db->from('absensi');
+		$this->db->join('employees', 'employees.id=absensi.employee_id');
+		$this->db->where('absensi.tanggal', date('Y-m-d'));
+		$this->db->order_by('absensi.updated_at', 'DESC');
+		$data = $this->db->get()->num_rows();
+
+		echo json_encode($data);
+	}
 
 	public function cekAlamat()
 	{

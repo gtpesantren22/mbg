@@ -433,7 +433,14 @@
 
 
         function updateStats() {
-            document.getElementById('totalAttendance').textContent = attendanceHistory.length;
+            $.ajax({
+                url: "<?= base_url('scanner/getHistoryAll') ?>",
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    document.getElementById('totalAttendance').textContent = data;
+                }
+            })
         }
 
         function renderAttendanceHistory() {
