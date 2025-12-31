@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Absensi QR Code - Absensi MBG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -48,7 +51,8 @@
         html,
         body {
             height: 100%;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* Scanner styles */
@@ -186,6 +190,10 @@
 
         /* Responsive breakpoints */
         @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+
             .full-screen-container {
                 height: calc(100vh - 140px);
                 /* Lebih tinggi untuk mobile */
@@ -198,11 +206,12 @@
             .left-panel,
             .right-panel {
                 height: auto !important;
-                min-height: 50vh;
+                min-height: auto !important;
             }
 
             .scanner-container {
-                height: 60vh;
+                height: auto;
+                min-height: 60vh;
             }
 
             .scanner-overlay {
@@ -218,7 +227,7 @@
     </style>
 </head>
 
-<body class="bg-gray-900 text-white h-screen flex flex-col">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
     <!-- Header -->
     <div class="w-full text-center py-2 bg-gradient-to-r from-primary-800 to-primary-900">
         <h1 class="text-lg font-bold tracking-wide">
@@ -228,7 +237,7 @@
 
 
     <!-- Main Content - Full Screen Split Layout -->
-    <main class="flex-1 overflow-hidden">
+    <main class="flex-1">
         <div class="w-full h-full px-4 lg:px-8 py-4">
             <div class="flex split-layout gap-4 lg:gap-8 h-full">
                 <!-- Left Panel (Scanner) - Full Height -->
@@ -281,27 +290,6 @@
                 <div class="right-panel w-1/2 flex flex-col">
                     <!-- Result Section -->
                     <div class="flex-1 flex flex-col space-y-4 lg:space-y-6">
-                        <!-- Employee Info Card -->
-                        <!-- <div id="employeeCard" class="hidden bg-gradient-to-r from-primary-800 to-secondary-800 rounded-2xl p-4 lg:p-6 success-pulse">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 lg:w-16 lg:h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-user text-white text-xl lg:text-2xl"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 id="employeeName" class="text-lg lg:text-xl font-bold mb-2"></h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <div class="text-xs lg:text-sm opacity-80 mb-1">ID Karyawan</div>
-                                            <div id="employeeId" class="font-semibold text-base lg:text-lg"></div>
-                                        </div>
-                                        <div>
-                                            <div class="text-xs lg:text-sm opacity-80 mb-1">Divisi</div>
-                                            <div id="employeeDivision" class="font-semibold text-base lg:text-lg"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
 
                         <!-- Attendance Status -->
                         <div id="attendanceStatus" class=" bg-gray-800 rounded-2xl p-4 lg:p-6">
@@ -354,33 +342,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Demo Panel - Desktop Only -->
-    <!-- <div class="hidden lg:block fixed bottom-8 right-8 bg-gray-800 p-4 lg:p-6 rounded-2xl shadow-2xl" style="width: 280px;">
-        <div class="flex items-center mb-3 lg:mb-4">
-            <i class="fas fa-flask text-primary-400 text-lg lg:text-xl mr-2 lg:mr-3"></i>
-            <h4 class="text-base lg:text-lg font-semibold">Mode Demo</h4>
-        </div>
-        <p class="text-gray-300 text-xs lg:text-sm mb-3 lg:mb-4">Klik untuk simulasi scan QR:</p>
-        <div class="space-y-2 lg:space-y-3">
-            <button class="demo-scan w-full bg-primary-600 hover:bg-primary-700 text-white py-2 lg:py-3 rounded-xl transition flex items-center justify-center text-sm lg:text-base"
-                data-id="MBG001" data-type="CHECKIN">
-                <i class="fas fa-sign-in-alt mr-2 lg:mr-3"></i>
-                Ahmad (Masuk)
-            </button>
-            <button class="demo-scan w-full bg-primary-600 hover:bg-primary-700 text-white py-2 lg:py-3 rounded-xl transition flex items-center justify-center text-sm lg:text-base"
-                data-id="MBG002" data-type="CHECKIN">
-                <i class="fas fa-sign-in-alt mr-2 lg:mr-3"></i>
-                Siti (Masuk)
-            </button>
-            <button class="demo-scan w-full bg-secondary-600 hover:bg-secondary-700 text-white py-2 lg:py-3 rounded-xl transition flex items-center justify-center text-sm lg:text-base"
-                data-id="MBG003" data-type="CHECKOUT">
-                <i class="fas fa-sign-out-alt mr-2 lg:mr-3"></i>
-                Budi (Pulang)
-            </button>
-        </div>
-    </div> -->
-
     <!-- Success Modal -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-gradient-to-b from-green-600 to-green-800 text-white rounded-2xl p-6 lg:p-8 max-w-sm lg:max-w-md w-full text-center">
